@@ -27,6 +27,7 @@ function M.list(context)
   vim.cmd('keepalt edit ' .. bookmark_path)
   highlight(Path:new(bookmark_path):readlines())
   mappings.apply_mappings(config.values.mappings)
+  vim.cmd([[setlocal cursorline]])
 end
 
 
