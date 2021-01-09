@@ -17,7 +17,8 @@ require'lir'.setup {
   -- ...
   mappings = {
     -- ...
-    ['B']     = require'lir.bookmark.actions'.add,
+    ['B']     = require'lir.bookmark.actions'.list,
+    ['ba']     = require'lir.bookmark.actions'.add,
   },
 }
 
