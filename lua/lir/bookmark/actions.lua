@@ -1,4 +1,5 @@
 local a = vim.api
+local uv = vim.loop
 
 local Path = require 'plenary.path'
 local actions = require 'lir.actions'
@@ -21,7 +22,7 @@ end
 
 -- Use from lir.nvim
 function M.list(context)
-  local bookmark_path = config.values.bookmark_path
+  local bookmark_path = vim.fn.expand(config.values.bookmark_path)
   vim.w.lir_dir = context.dir
   vim.cmd('keepalt edit ' .. bookmark_path)
   highlight(Path:new(bookmark_path):readlines())
@@ -34,7 +35,8 @@ function M.add(context)
   -- flags: https://nodejs.org/api/fs.html#fs_file_system_flags
   -- a+ : read/write (append). Also, if it does not exists, create it.
   local path = context.dir .. context:current_value()
-  local bookmark_path = config.values.bookmark_path
+  print(config.values.bookmark_path)
+  local bookmark_path = vim.fn.expand(config.values.bookmark_path)
   assert(uv.fs_open(bookmark_path, "a+", 438, function(err, fd)
     uv.fs_write(fd, path .. '\n', -1)
     uv.fs_close(fd)
