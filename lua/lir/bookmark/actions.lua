@@ -10,24 +10,14 @@ local config = require 'lir.bookmark.config'
 
 local M = {}
 
-local function highlight(files)
-  local ns = vim.api.nvim_create_namespace('lir_mmv_dir')
-  vim.api.nvim_buf_clear_namespace(0, ns, 0, -1)
-  for i, file in ipairs(files) do
-    if Path:new(file):is_dir() then
-      vim.api.nvim_buf_add_highlight(0, ns, 'PreProc', i - 1, 0, -1)
-    end
-  end
-end
-
 -- Use from lir.nvim
 function M.list(context)
   local bookmark_path = vim.fn.expand(config.values.bookmark_path)
   vim.w.lir_dir = context.dir
   vim.cmd('keepalt edit ' .. bookmark_path)
-  highlight(Path:new(bookmark_path):readlines())
   mappings.apply_mappings(config.values.mappings)
   vim.cmd([[setlocal cursorline]])
+  vim.cmd([[set syntax=lir_bookmark]])
 end
 
 
@@ -36,7 +26,9 @@ function M.add(context)
   -- flags: https://nodejs.org/api/fs.html#fs_file_system_flags
   -- a+ : read/write (append). Also, if it does not exists, create it.
   local path = context.dir .. context:current_value()
-  print(config.values.bookmark_path)
+  if Path:new(path):is_dir() then
+    path = path .. '/'
+  end
   local bookmark_path = vim.fn.expand(config.values.bookmark_path)
   assert(uv.fs_open(bookmark_path, "a+", 438, function(err, fd)
     uv.fs_write(fd, path .. '\n', -1)
@@ -51,6 +43,9 @@ local function open(cmd)
   local path = vim.fn.fnameescape(a.nvim_get_current_line())
   actions.quit()
   vim.cmd(cmd .. ' ' .. path)
+  if vim.endswith(path, '/')  then
+    vim.cmd('doautocmd BufEnter')
+  end
 end
 
 --- split
@@ -77,6 +72,9 @@ function M.edit()
   end
 
   vim.cmd('keepalt edit ' .. vim.fn.fnameescape(path))
+  if vim.endswith(path, '/')  then
+    vim.cmd('doautocmd BufEnter')
+  end
 end
 
 function M.open_lir()
