@@ -11,9 +11,9 @@ local config = require 'lir.bookmark.config'
 local M = {}
 
 -- Use from lir.nvim
-function M.list(context)
+function M.list()
   local bookmark_path = vim.fn.expand(config.values.bookmark_path)
-  vim.w.lir_dir = context.dir
+  vim.w.lir_dir = lir.get_context().dir
   vim.cmd('keepalt edit ' .. bookmark_path)
   mappings.apply_mappings(config.values.mappings)
   vim.cmd([[setlocal cursorline]])
@@ -22,15 +22,16 @@ end
 
 
 -- Use from lir.nvim
-function M.add(context)
+function M.add()
   -- flags: https://nodejs.org/api/fs.html#fs_file_system_flags
   -- a+ : read/write (append). Also, if it does not exists, create it.
-  local path = context.dir .. context:current_value()
+  local ctx = lir.get_context()
+  local path = ctx.dir .. ctx:current_value()
   if Path:new(path):is_dir() then
     path = path .. '/'
   end
   local bookmark_path = vim.fn.expand(config.values.bookmark_path)
-  assert(uv.fs_open(bookmark_path, "a+", 438, function(err, fd)
+  assert(uv.fs_open(bookmark_path, "a+", 438, function(_, fd)
     uv.fs_write(fd, path .. '\n', -1)
     uv.fs_close(fd)
     print('[lir-bookmark] Added bookmark: ' .. path)
